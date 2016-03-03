@@ -56,10 +56,10 @@ namespace HandlebarsDotNet.Compiler
                 Expression.IfThenElse(
                     Expression.TypeIs(iex.Sequence, typeof(IEnumerable)),
                     Expression.IfThenElse(
-                        Expression.Call(new Func<object, bool>(IsNonListDynamic).Method, new[] { iex.Sequence }),
+                        Expression.Call(new Func<object, bool>(IsNonListDynamic).GetMethodInfo(), new[] { iex.Sequence }),
                         GetDynamicIterator(iteratorBindingContext, iex),
                         Expression.IfThenElse(
-                            Expression.Call(new Func<object, bool>(IsGenericDictionary).Method, new[] { iex.Sequence }),
+                            Expression.Call(new Func<object, bool>(IsGenericDictionary).GetMethodInfo(), new[] { iex.Sequence }),
                             GetDictionaryIterator(iteratorBindingContext, iex),
                             GetEnumerableIterator(iteratorBindingContext, iex))),
                     GetObjectIterator(iteratorBindingContext, iex))
@@ -75,7 +75,7 @@ namespace HandlebarsDotNet.Compiler
                         typeof(IteratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
-                    new Action<IteratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+                    new Action<IteratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
                     new Expression[]
                     {
                         Expression.Convert(contextParameter, typeof(IteratorBindingContext)),
@@ -94,7 +94,7 @@ namespace HandlebarsDotNet.Compiler
                         typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
-                    new Action<ObjectEnumeratorBindingContext, object, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+                    new Action<ObjectEnumeratorBindingContext, object, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
                     new Expression[]
                     {
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
@@ -113,7 +113,7 @@ namespace HandlebarsDotNet.Compiler
                         typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
-                    new Action<ObjectEnumeratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+                    new Action<ObjectEnumeratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
                     new Expression[]
                     {
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
@@ -132,7 +132,7 @@ namespace HandlebarsDotNet.Compiler
                         typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
-                    new Action<ObjectEnumeratorBindingContext, IDynamicMetaObjectProvider, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+                    new Action<ObjectEnumeratorBindingContext, IDynamicMetaObjectProvider, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
                     new Expression[]
                     {
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
@@ -154,7 +154,7 @@ namespace HandlebarsDotNet.Compiler
             return
                 target.GetType()
                     .GetInterfaces()
-                    .Where(i => i.IsGenericType)
+                    .Where(i => i.GetTypeInfo().IsGenericType)
                     .Any(i => i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
         }
 

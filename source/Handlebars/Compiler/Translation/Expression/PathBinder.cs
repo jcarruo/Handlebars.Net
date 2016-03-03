@@ -82,7 +82,7 @@ namespace HandlebarsDotNet.Compiler
         {
             return Expression.Call(
                 Expression.Constant(this),
-                new Func<BindingContext, string, object>(ResolvePath).Method,
+                new Func<BindingContext, string, object>(ResolvePath).GetMethodInfo(),
                 CompilationContext.BindingContext,
                 Expression.Constant(pex.Path));
         }
@@ -98,7 +98,7 @@ namespace HandlebarsDotNet.Compiler
         {
             return Expression.Call(
                 Expression.Constant(this),
-                new Func<BindingContext, HashParametersExpression, object>(ResolveParameters).Method,
+                new Func<BindingContext, HashParametersExpression, object>(ResolveParameters).GetMethodInfo(),
                 CompilationContext.BindingContext,
                 Expression.Constant(hpex));
         }
@@ -277,7 +277,7 @@ namespace HandlebarsDotNet.Compiler
         {
             return instanceType.GetInterfaces()
                 .FirstOrDefault(i =>
-                    i.IsGenericType
+                    i.GetTypeInfo().IsGenericType
                     &&
                     (
                         i.GetGenericTypeDefinition() == typeof(IDictionary<,>)

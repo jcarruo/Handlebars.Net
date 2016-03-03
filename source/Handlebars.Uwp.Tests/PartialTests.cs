@@ -1,0 +1,314 @@
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
+using System.IO;
+
+namespace HandlebarsDotNet.Test
+{
+    [TestClass]
+    public class PartialTests
+    {
+        [TestMethod]
+        public void BasicPartial()
+        {
+            string source = "Hello, {{>person}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                name = "Marc"
+            };
+
+            var partialSource = "{{name}}";
+            using(var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc!", result);
+        }
+
+        [TestMethod]
+        public void BasicPartialWithContext()
+        {
+            string source = "Hello, {{>person leadDev}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                leadDev = new {
+                    name = "Marc"
+                }
+            };
+
+            var partialSource = "{{name}}";
+            using(var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc!", result);
+        }
+
+        [TestMethod]
+        public void BasicPartialWithStringParameter()
+        {
+            string source = "Hello, {{>person first='Pete'}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource = "{{first}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(null);
+            Assert.AreEqual("Hello, Pete!", result);
+        }
+
+        [TestMethod]
+        public void BasicPartialWithMultipleStringParameters()
+        {
+            string source = "Hello, {{>person first='Pete' last=\"Sampras\"}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource = "{{first}} {{last}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(null);
+            Assert.AreEqual("Hello, Pete Sampras!", result);
+        }
+
+        [TestMethod]
+        public void BasicPartialWithContextParameter()
+        {
+            string source = "Hello, {{>person first=leadDev.marc}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new
+            {
+                leadDev = new
+                {
+                    marc = new
+                    {
+                        name = "Marc"
+                    }
+                }
+            };
+
+            var partialSource = "{{first.name}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc!", result);
+        }
+
+        [TestMethod]
+        public void BasicPartialWithContextAndStringParameters()
+        {
+            string source = "Hello, {{>person first=leadDev.marc last='Smith'}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new
+            {
+                leadDev = new
+                {
+                    marc = new
+                    {
+                        name = "Marc"
+                    }
+                }
+            };
+
+            var partialSource = "{{first.name}} {{last}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc Smith!", result);
+        }
+
+        [TestMethod]
+        public void BasicPartialWithTypedParameters()
+        {
+            string source = "Hello, {{>person first=1 last=true}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource = "{{first}} {{last}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(null);
+            Assert.AreEqual("Hello, 1 True!", result);
+        }
+
+        [TestMethod]
+        public void BasicPartialWithStringParameterIncludingExpressionChars()
+        {
+            string source = "Hello, {{>person first='Pe ({~te~}) '}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource = "{{first}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(null);
+            Assert.AreEqual("Hello, Pe ({~te~}) !", result);
+        }
+
+        [TestMethod]
+        public void DynamicPartial()
+        {
+            string source = "Hello, {{> (partialNameHelper)}}!";
+
+            Handlebars.RegisterHelper("partialNameHelper", (writer, context, args) =>
+            {
+                writer.WriteSafeString("partialName");
+            });
+
+            using (var reader = new StringReader("world"))
+            {
+                var partial = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("partialName", partial);
+            }
+
+            var template = Handlebars.Compile(source);
+            var data = new { };
+            var result = template(data);
+            Assert.AreEqual("Hello, world!", result);
+        }
+
+        [TestMethod]
+        public void DynamicPartialWithHelperArguments()
+        {
+            string source = "Hello, {{> (concat 'par' 'tial' item1='Na' item2='me')}}!";
+
+            Handlebars.RegisterHelper("concat", (writer, context, args) =>
+            {
+                var hash = args[2] as Dictionary<string, object>;
+                writer.WriteSafeString(string.Concat(args[0], args[1], hash["item1"], hash["item2"]));
+            });
+
+            using (var reader = new StringReader("world"))
+            {
+                var partial = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("partialName", partial);
+            }
+
+            var template = Handlebars.Compile(source);
+            var data = new { };
+            var result = template(data);
+            Assert.AreEqual("Hello, world!", result);
+        }
+
+        [TestMethod]
+        public void DynamicPartialWithContext()
+        {
+            var source = "Hello, {{> (lookup name) context }}!";
+
+            Handlebars.RegisterHelper("lookup", (output, context, arguments) =>
+            {
+                output.WriteSafeString(arguments[0]);
+            });
+
+            var template = Handlebars.Compile(source);
+
+            using (var reader = new StringReader("{{first}} {{last}}"))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("test", partialTemplate);
+            }
+
+            var data = new
+            {
+                name = "test",
+                context = new
+                {
+                    first = "Marc",
+                    last = "Smith"
+                }
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc Smith!", result);
+        }
+
+        [TestMethod]
+        public void DynamicPartialWithParameters()
+        {
+            var source = "Hello, {{> (lookup name) first='Marc' last='Smith' }}!";
+
+            Handlebars.RegisterHelper("lookup", (output, context, arguments) =>
+            {
+                output.WriteSafeString(arguments[0]);
+            });
+
+            var template = Handlebars.Compile(source);
+
+            using (var reader = new StringReader("{{first}} {{last}}"))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("test", partialTemplate);
+            }
+
+            var data = new
+            {
+                name = "test"
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc Smith!", result);
+        }
+
+        [TestMethod]
+        public void SuperfluousWhitespace()
+        {
+            string source = "Hello, {{  >  person  }}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                name = "Marc"
+            };
+
+            var partialSource = "{{name}}";
+            using(var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc!", result);
+        }
+    }
+}
+

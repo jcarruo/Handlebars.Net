@@ -76,13 +76,13 @@ namespace HandlebarsDotNet.Compiler
                 {
                     return Expression.Call(
                         Expression.Constant(helper.Target),
-                        helper.Method,
+                        helper.GetMethodInfo(),
                         arguments);
                 }
                 else
                 {
                     return Expression.Call(
-                        helper.Method,
+                        helper.GetMethodInfo(),
                         arguments);
                 }
             }
@@ -90,7 +90,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 return Expression.Call(
                     Expression.Constant(this),
-                    new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).Method,
+                    new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).GetMethodInfo(),
                     CompilationContext.BindingContext,
                     Expression.Constant(hex.HelperName),
                     Expression.NewArrayInit(typeof(object), hex.Arguments));

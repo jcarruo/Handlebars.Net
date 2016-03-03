@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using System.Collections;
 using System.Linq;
 using System.IO;
+using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -34,7 +35,7 @@ namespace HandlebarsDotNet.Compiler
                 throw new HandlebarsCompilerException("Tried to compile a section expression that did not begin with # or ^");
             }
             return Expression.Call(
-                method.Method,
+                method.GetMethodInfo(),
                 HandlebarsExpression.Path(dsex.Path.Path.Substring(1)),
                 CompilationContext.BindingContext,
                 new FunctionBuilder(CompilationContext.Configuration).Compile(dsex.Body, CompilationContext.BindingContext));

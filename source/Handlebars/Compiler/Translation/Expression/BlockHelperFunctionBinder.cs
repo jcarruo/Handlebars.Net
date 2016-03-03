@@ -54,13 +54,13 @@ namespace HandlebarsDotNet.Compiler
             {
                 return Expression.Call(
                     Expression.Constant(helper.Target),
-                    helper.Method,
+                    helper.GetMethodInfo(),
                     arguments);
             }
             else
             {
                 return Expression.Call(
-                    helper.Method,
+                    helper.GetMethodInfo(),
                     arguments);
             }
         }

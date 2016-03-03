@@ -2,6 +2,7 @@
 using System.Linq;
 using HandlebarsDotNet.Compiler;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -20,7 +21,7 @@ namespace HandlebarsDotNet.Compiler
         protected override Expression VisitBoolishExpression(BoolishExpression bex)
         {
             return Expression.Call(
-                new Func<object, bool>(HandlebarsUtils.IsTruthyOrNonEmpty).Method,
+                new Func<object, bool>(HandlebarsUtils.IsTruthyOrNonEmpty).GetMethodInfo(),
                 Visit(bex.Condition));
         }
 

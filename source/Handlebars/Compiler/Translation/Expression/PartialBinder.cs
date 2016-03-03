@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -38,7 +39,7 @@ namespace HandlebarsDotNet.Compiler
                     pex.Argument);
             }
             return Expression.Call(
-                new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).Method,
+                new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).GetMethodInfo(),
                 Expression.Convert(pex.PartialName, typeof(string)),
                 bindingContext,
                 Expression.Constant(CompilationContext.Configuration));

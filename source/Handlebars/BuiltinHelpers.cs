@@ -42,7 +42,7 @@ namespace HandlebarsDotNet
                 Delegate possibleDelegate;
 	            try
 	            {
-					possibleDelegate = Delegate.CreateDelegate(typeof(T), method); 
+					possibleDelegate = method.CreateDelegate(typeof(T)); 
 	            }
 	            catch
 	            {
@@ -51,7 +51,7 @@ namespace HandlebarsDotNet
 	            if (possibleDelegate != null)
                 {
                     yield return new KeyValuePair<string, T>(
-                        ((DescriptionAttribute)Attribute.GetCustomAttribute(method, typeof(DescriptionAttribute))).Description,
+                        ((DescriptionAttribute)method.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                         (T)(object)possibleDelegate);
                 }
             }
